@@ -1,4 +1,22 @@
 import pandas as pd
+import numpy as np
+
+df = pd.read_csv('layoffs_data.csv')
+columns_to_delete = ['List_of_Employees_Laid_Off', 'Laid_Off_Count', 'Source']
+layoff_data = df.drop(columns_to_delete, axis=1)
+
+layoff_data = layoff_data.dropna(
+    axis=0,
+    how='any',
+    subset=None,
+    inplace=False
+    )
+
+layoff_data['Layoff_percentage'] = (layoff_data['Percentage'] * 100)
+
+pip install pandas plotly dash
+
+import pandas as pd
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
