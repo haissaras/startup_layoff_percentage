@@ -1,0 +1,44 @@
+import pandas as pd
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import plotly.express as px
+
+# Calculate average layoff percentage for each stage and country
+stage_country_data = layoff_data.groupby(['Stage', 'Country'])['Layoff_percentage'].mean().reset_index()
+
+app = dash.Dash(__name__)
+
+# Define country options for the dropdown
+country_options = [{'label': 'All Countries', 'value': 'all'}] + [{'label': country, 'value': country} for country in layoff_data['Country'].unique()]
+
+# Define app layout
+app.layout = html.Div([
+    dcc.Dropdown(
+        id='country-dropdown',
+        options=country_options,
+        multi=True,
+        value=['all']  # Initial selected value
+    ),
+    dcc.Graph(id='layoff-percentage-graph')
+])
+
+# Define callback to update the graph based on dropdown selection
+@app.callback(
+    Output('layoff-percentage-graph', 'figure'),
+    Input('country-dropdown', 'value')
+)
+def update_graph(selected_countries):
+    if 'all' in selected_countries:
+        filtered_df = stage_country_data.copy()  # Show all countries
+    else:
+        filtered_df = stage_country_data[stage_country_data['Country'].isin(selected_countries)]
+
+    fig = px.bar(filtered_df, x='Stage', y='Layoff_percentage', color='Country',
+                 labels={'Stage': 'Stage', 'Layoff_percentage': 'Average Layoff Percentage'},
+                 title='Average Layoff Percentage by Stage (Filtered by Country)')
+    return fig
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
